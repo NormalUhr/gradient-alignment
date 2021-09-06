@@ -1,0 +1,10 @@
+.DS_Store
+*/.DS_Store
+*/*/.DS_Store
+# compiled python files
+*.pyc
+.idea/
+
+__pycache__
+*/__pycache__
+*/*/__pycache__

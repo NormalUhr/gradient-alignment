@@ -6,7 +6,7 @@ from torchvision import datasets, transforms
 
 
 def get_loaders(dataset, n_ex, batch_size, train_set, shuffle, data_augm):
-    dir_ = '~/data/' if os.path.exists('/home/maksym') else '/tmldata1/andriush/data'
+    dir_ = './data/'
     dataset_f = datasets_dict[dataset]
     num_workers = 2
     data_augm_transforms = [transforms.RandomCrop(32, padding=4)]

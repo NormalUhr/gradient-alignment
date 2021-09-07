@@ -243,26 +243,24 @@ def main():
         if epoch == args.epochs:
             torch.save({'last': model.state_dict(), 'best': best_state_dict}, 'models/{} epoch={}.pth'.format(model_name, epoch))
             # disable global conversion to fp16 from amp.initialize() (https://github.com/NVIDIA/apex/issues/567)
-            context_manager = utils.nullcontext()
-            with context_manager:
-                last_state_dict = copy.deepcopy(model.state_dict())
-                half_prec = False  # final eval is always in fp32
-                model.load_state_dict(last_state_dict)
-                utils.model_eval(model, half_prec)
-                opt = torch.optim.SGD(model.parameters(), lr=0)
+            last_state_dict = copy.deepcopy(model.state_dict())
+            half_prec = False  # final eval is always in fp32
+            model.load_state_dict(last_state_dict)
+            utils.model_eval(model, half_prec)
+            opt = torch.optim.SGD(model.parameters(), lr=0)
 
-                attack_iters, n_restarts = (50, 10) if not args.debug else (10, 3)
+            attack_iters, n_restarts = (50, 10) if not args.debug else (10, 3)
+            test_acc_clean, _, _ = rob_acc(test_batches, model, eps, pgd_alpha, opt, half_prec, 0, 1)
+            test_acc_pgd_rr, _, deltas_pgd_rr = rob_acc(test_batches, model, eps, pgd_alpha, opt, half_prec, attack_iters, n_restarts)
+            logger.info('[last: test on 10k points] acc_clean {:.2%}, pgd_rr {:.2%}'.format(test_acc_clean, test_acc_pgd_rr))
+
+            if args.eval_early_stopped_model:
+                model.load_state_dict(best_state_dict)
+                utils.model_eval(model, half_prec)
                 test_acc_clean, _, _ = rob_acc(test_batches, model, eps, pgd_alpha, opt, half_prec, 0, 1)
                 test_acc_pgd_rr, _, deltas_pgd_rr = rob_acc(test_batches, model, eps, pgd_alpha, opt, half_prec, attack_iters, n_restarts)
-                logger.info('[last: test on 10k points] acc_clean {:.2%}, pgd_rr {:.2%}'.format(test_acc_clean, test_acc_pgd_rr))
-
-                if args.eval_early_stopped_model:
-                    model.load_state_dict(best_state_dict)
-                    utils.model_eval(model, half_prec)
-                    test_acc_clean, _, _ = rob_acc(test_batches, model, eps, pgd_alpha, opt, half_prec, 0, 1)
-                    test_acc_pgd_rr, _, deltas_pgd_rr = rob_acc(test_batches, model, eps, pgd_alpha, opt, half_prec, attack_iters, n_restarts)
-                    logger.info('[best: test on 10k points][iter={}] acc_clean {:.2%}, pgd_rr {:.2%}'.format(
-                        best_iteration, test_acc_clean, test_acc_pgd_rr))
+                logger.info('[best: test on 10k points][iter={}] acc_clean {:.2%}, pgd_rr {:.2%}'.format(
+                    best_iteration, test_acc_clean, test_acc_pgd_rr))
 
         utils.model_train(model, half_prec)
 

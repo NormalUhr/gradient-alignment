@@ -88,7 +88,8 @@ def main():
     test_batches_fast = data.get_loaders(args.dataset, n_eval_every_k_iter, args.batch_size_eval, train_set=False, shuffle=False, data_augm=False)
 
     # model = models.get_model(args.model, n_cls, half_prec, data.shapes_dict[args.dataset], args.n_filters_cnn).cuda()
-    model = model_zoo.PreActResNet18()
+    device = "cuda:0"
+    model = model_zoo.PreActResNet18().to(device)
     _, _, _, norm_layer = cifar10_dataloader()
     model.normalize = norm_layer
     model.apply(utils.initialize_weights)

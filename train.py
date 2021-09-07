@@ -12,6 +12,8 @@ import copy
 import utils
 import data
 import models
+import model_zoo
+from datasets import cifar10_dataloader
 
 from datetime import datetime
 from utils import rob_acc, l2_norm_batch, get_input_grad, clamp
@@ -85,7 +87,10 @@ def main():
     test_batches = data.get_loaders(args.dataset, args.n_final_eval, args.batch_size_eval, train_set=False, shuffle=False, data_augm=False)
     test_batches_fast = data.get_loaders(args.dataset, n_eval_every_k_iter, args.batch_size_eval, train_set=False, shuffle=False, data_augm=False)
 
-    model = models.get_model(args.model, n_cls, half_prec, data.shapes_dict[args.dataset], args.n_filters_cnn).cuda()
+    # model = models.get_model(args.model, n_cls, half_prec, data.shapes_dict[args.dataset], args.n_filters_cnn).cuda()
+    model = model_zoo.PreActResNet18()
+    _, _, _, norm_layer = cifar10_dataloader()
+    model.normalize = norm_layer
     model.apply(utils.initialize_weights)
     model.train()
 

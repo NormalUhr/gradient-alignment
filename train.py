@@ -57,7 +57,6 @@ def get_args():
 
 def main():
     args = get_args()
-    os.environ["CUDA_VISIBLE_DEVICES"] = str(args.gpu)
 
     cur_timestamp = str(datetime.now())[:-3]  # we also include ms to prevent the probability of name collision
     model_width = {'linear': '', 'cnn': args.n_filters_cnn, 'lenet': '', 'resnet18': ''}[args.model]
